@@ -1,12 +1,8 @@
 """ Les joueurs """
+class Player:
 
-class Joueur:
-    """ Modèle de joueur """
-
-    def __init__(self, nom, prenom, date_de_naissance):
-        """ Initialise les valeurs d'un joueur via le constructeur __init__ """
-
-        self.nom = nom
-        self.prenom = prenom
-        self.date_de_naissance = date_de_naissance
-
+    def __init__(self, first_name, last_name, dath_of_birth, rank):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.dath_of_birth = dath_of_birth
+        self.rank = rank
