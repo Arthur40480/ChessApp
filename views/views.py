@@ -1,6 +1,8 @@
 from datetime import date
 
 class View:
+
+    """ ----- ----- MENU ----- ----- """
     def message(self, message):
         print("-----------------------------------")
         print(f"{message}")
@@ -29,7 +31,7 @@ class View:
             error_message = "Veuillez choisir un nombre 🔢️"
             self.message(error_message)
 
-
+    """ ----- ----- JOUEUR ----- ----- """
     def new_player(self):
         last_name = input("Nom :")
         first_name = input("Prénom :")
@@ -40,12 +42,32 @@ class View:
         rank = int(input("Rang :"))
         return first_name, last_name, dath_of_birth, rank
 
-    def display_player_list(self, list):
-        for player in list:
+    def display_player_list(self, players_list):
+        for player in players_list:
             print(player)
 
     def modify_rank(self):
         last_name_player = input("Nom du joueur à modifier :")
-        first_name_player = input("Nom du joueur à modifier :")
+        first_name_player = input("Prénom du joueur à modifier :")
         rank = input("Nouveau classement :")
         return last_name_player, first_name_player, rank
+
+    """ ----- ----- TOURNOI ----- ----- """
+    def new_tournament(self):
+        name = input("Le nom du tournoi :")
+        place = input("Où :")
+        start_date = date(input("Date de début (dd/mm/yyyy) :")).strftime("%d/%m/%Y")
+        end_date = date(input("Date de fin (dd/mm/yyyy) :")).strftime("%d/%m/%Y")
+        round = input("Nombre de tours (4 par défaut) :" or "4")
+        description = input("Remarques générales :")
+
+    def tournament_roster(self, players):
+        x = 0
+        for player in players:
+            x = x + 1
+            print(str(x) + " " + "➡" + " " + player["last_name"] + " " + player["first_name"] + " " + str(player["rank"]) )
+
+
+
+
+

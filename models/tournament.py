@@ -1,28 +1,28 @@
 """ Les tournois """
 
-class Tournoi:
+class Tournament:
     """ Modèle de tournoi """
 
     def __init__(
         self,
-        nom,
-        lieu,
-        date_de_debut,
-        date_de_fin,
-        nbr_de_tours="4",
-        numero_tour_actuel,
-        liste_des_tours,
-        liste_des_joueurs,
+        name,
+        place,
+        start_date,
+        end_date,
+        nbr_rounds="4",
+        current_round,
+        round_list,
+        players_list,
         description,
     ):
         """ Initialise les valeurs d'un tournoi via le constructeur __init__ """
 
-        self.nom = nom
-        self.lieu = lieu
-        self.date_de_debut = date_de_debut
-        self.date_de_fin = date_de_fin
-        self.nbr_de_tour = nbr_de_tours
-        self.numero_tour_actuel = numero_tour_actuel
-        self.liste_des_tours = liste_des_tours
-        self.liste_des_joueurs = liste_des_joueurs
+        self.name = name
+        self.place = place
+        self.start_date = start_date
+        self.end_date = end_date
+        self.nbr_rounds = nbr_rounds
+        self.current_round = current_round
+        self.round_list = round_list
+        self.players_list = players_list
         self.description = description

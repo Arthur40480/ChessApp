@@ -4,12 +4,12 @@ from tinydb import TinyDB, Query, where
 
 class Controller:
 
-    """ ----- ----- JOUEUR ----- ----- """
+    """ ----- ----- Menu ----- ----- """
     def __init__(self):
         """ Initialise les valeurs du Conbtroller via le constructeur __init__ """
-        self.db = TinyDB("db.json")
+        self.players_list = []
+        self.db = TinyDB("data/players/db.json")
         self.players_table = self.db.table("Players")
-        self.tournament_table = self.db.table("Tournament")
         self.view = View()
         self.user = Query()
 
@@ -25,10 +25,14 @@ class Controller:
         if user_choice == 1:
             self.new_player()
         if user_choice == 2:
-            self.player_list()
+            self.display_player_list()
         if user_choice == 3:
             self.upgrade_rank()
+        if user_choice == 4:
+            self.tournament_roster()
 
+
+    """ ----- ----- Joueur ----- ----- """
     def new_player(self):
         """ Créer un nouveau Joueur """
         player_creation_title = "Création d'un nouveau joueur 🙋"
@@ -46,22 +50,42 @@ class Controller:
             error_message = "Ce joueur est déjà enregistrer ⚠️"
             self.view.message(error_message)
             self.display_menu()
+
         player = Player(last_name, first_name, dath_of_birth, rank)
-        self.add_player(player.__dict__)
+        self.add_player_in_file(player.__dict__)
+        new_player_again = input("Voulez vous enregistrer un autre joueur ? 🔄 (Y/N) :")
+        if (new_player_again == "Y"):
+            self.new_player()
+        else:
+            self.display_menu()
 
-    def add_player(self, datas):
+    def players_roster(self):
+        """ Création d'une liste contenant les joueurs enregistrés """
+        players = self.players_table.all()
+        players = sorted(players, key=lambda player: player['last_name'])
+        player_roster = []
+        for people in players:
+            player = Player(
+                people["last_name"],
+                people["first_name"],
+                people["dath_of_birth"],
+                people["rank"],
+            ).__dict__
+            player_roster.append(player)
+        return player_roster
+
+    def add_player_in_file(self, data):
         """ Enregistre le joueur dans le fichier JSON """
-        self.players_table.insert(datas)
-        print(self.players_table.all())
-        print("Joueur bien enregistrer 🎉")
+        self.players_table.insert(data)
+        add_player_in_file_title = "Joueur bien enregistrer 🎉"
+        self.view.message(add_player_in_file_title)
 
-    def player_list(self):
+    def display_player_list(self):
         """ Affiche la liste des joueurs enregistrer par ordre alphabétique (Nom) """
         list_title = "Liste des joueurs enregistrés 📃"
         self.view.message(list_title)
-        players = self.players_table
-        alphabetical_order_list = sorted(players, key=lambda player: player['last_name'])
-        self.view.display_player_list(alphabetical_order_list)
+        players = sorted(self.players_table, key=lambda player: player['last_name'])
+        self.view.display_player_list(players)
 
     def upgrade_rank(self):
         """ Modifie le classement d'un joueur """
@@ -72,7 +96,27 @@ class Controller:
         first_name = datas_to_modify[1]
         rank = int(datas_to_modify[2])
         player_to_modify = self.players_table.search(self.user.last_name == last_name and self.user.first_name == first_name)
-        print(type(player_to_modify))
+
+    """ ----- ----- TOURNOI ----- ----- """
+    def new_tournament(self):
+        """ Créer un Tournoi """
+        tournament_creation_title = "Création d'un nouveau tournoi 🏁"
+        self.view.message(tournament_creation_title)
+        tournament_data = self.view.new_tournament()
+        name = tournament_data[0]
+        place = tournament_data[1]
+        start_date = tournament_data[2]
+        end_date = tournament_data[3]
+        round = tournament_data[4]
+        description = tournament_data[5]
+        self.db_tournament = TinyDB(f"data/tournaments/{name}.json")
+        self.tournament_table = self.db_tournament.table(f"{name}")
+
+    def tournament_roster(self):
+        roster_title = " Veuillez choisir les joueurs participants au tournoi 🏆"
+        self.view.message(roster_title)
+        players = self.players_roster()
+        self.view.tournament_roster(players)
 
 
 
