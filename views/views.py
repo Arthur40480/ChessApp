@@ -11,10 +11,9 @@ class View:
     def menu(self):
         print("1: Ajouter un joueur ")
         print("2: Liste de tous les joueurs ")
-        print("3: Mettre à jour le classement d'un joueur ")
-        print("4: Créer un tournoi ")
-        print("5: Liste des tournois")
-        print("6: Quittez l'application")
+        print("3: Créer un tournoi ")
+        print("4: Liste des tournois")
+        print("5: Quittez l'application")
         print("-----------------------------------")
 
         try:
@@ -66,7 +65,7 @@ class View:
         for player in players:
             x = x + 1
             print(str(x) + " " + "➡" + " " + player["last_name"] + " " + player["first_name"] + " " + str(player["rank"]) )
-
+        print("-----------------------------------")
 
 
 

@@ -27,10 +27,7 @@ class Controller:
         if user_choice == 2:
             self.display_player_list()
         if user_choice == 3:
-            self.upgrade_rank()
-        if user_choice == 4:
             self.tournament_roster()
-
 
     """ ----- ----- Joueur ----- ----- """
     def new_player(self):
@@ -87,16 +84,6 @@ class Controller:
         players = sorted(self.players_table, key=lambda player: player['last_name'])
         self.view.display_player_list(players)
 
-    def upgrade_rank(self):
-        """ Modifie le classement d'un joueur """
-        rank_title = " Modification de classement 🏆"
-        self.view.message(rank_title)
-        datas_to_modify = self.view.modify_rank()
-        last_name = datas_to_modify[0]
-        first_name = datas_to_modify[1]
-        rank = int(datas_to_modify[2])
-        player_to_modify = self.players_table.search(self.user.last_name == last_name and self.user.first_name == first_name)
-
     """ ----- ----- TOURNOI ----- ----- """
     def new_tournament(self):
         """ Créer un Tournoi """
@@ -113,10 +100,22 @@ class Controller:
         self.tournament_table = self.db_tournament.table(f"{name}")
 
     def tournament_roster(self):
-        roster_title = " Veuillez choisir les joueurs participants au tournoi 🏆"
+        roster_title = " Veuillez choisir les joueurs participants au tournoi (8 joueurs max) 🏆"
         self.view.message(roster_title)
+        roster_list = []
         players = self.players_roster()
         self.view.tournament_roster(players)
+        while len(roster_list) < 8:
+            try:
+                number_select = int(input("Veuillez ajouter le numéro du joueur séléctionner :"))
+                player_select = (number_select - 1)
+                roster_list.append(players[player_select])
+                print(roster_list)
+            except ValueError:
+                error_title = "Ceci n'est pas un numéro, veuillez ajouter un numéro ❗"
+                self.view.message(error_title)
+        return roster_list
+
 
 
 
