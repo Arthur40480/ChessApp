@@ -31,6 +31,7 @@ class View:
             self.message(error_message)
 
 
+
     """ ----- ----- JOUEUR ----- ----- """
     def new_player(self):
         last_name = input("Nom :")
@@ -39,20 +40,27 @@ class View:
         b_month = int(input("Mois de naissance :"))
         b_year = int(input("Année de naissance :"))
         dath_of_birth = date(b_year, b_month, b_day).strftime("%d/%m/%y")
-        rank = int(input("Rang :"))
-        return first_name, last_name, dath_of_birth, rank
+        return first_name, last_name, dath_of_birth
+
+    def player_list_title(self):
+        list_title = " 📃 Liste des joueurs enregistrés 📃"
+        self.message(list_title)
+
+    def add_player_in_file_title(self):
+        add_player_in_file_title = "🎉 Joueur bien enregistrer 🎉"
+        self.message(add_player_in_file_title)
 
     def display_player_list(self, players_list):
         for player in players_list:
             print(player)
 
-    def modify_rank(self):
-        last_name_player = input("Nom du joueur à modifier :")
-        first_name_player = input("Prénom du joueur à modifier :")
-        rank = input("Nouveau classement :")
-        return last_name_player, first_name_player, rank
+
 
     """ ----- ----- TOURNOI ----- ----- """
+    def new_tournament_title(self):
+        tournament_creation_title = "🏁 Création d'un nouveau tournoi 🏁"
+        self.message(tournament_creation_title)
+
     def new_tournament(self):
         name = input("Le nom du tournoi :")
         place = input("Où :")
@@ -61,11 +69,19 @@ class View:
         round = input("Nombre de tours (4 par défaut) :" or "4")
         description = input("Remarques générales :")
 
+    def tournament_roster_title(self):
+        roster_title = "🏆 Veuillez choisir les joueurs participants au tournoi (8 joueurs max) 🏆"
+        self.message(roster_title)
+
+    def select_error_list(self):
+        error_title = "❗ Ceci n'est pas un numéro, veuillez ajouter un numéro ❗"
+        self.message(error_title)
+
     def tournament_roster(self, players):
         x = 0
         for player in players:
             x = x + 1
-            print(str(x) + " " + "➡" + " " + player["last_name"] + " " + player["first_name"] + " " + str(player["rank"]) )
+            print(str(x) + " " + "➡" + " " + player["last_name"] + " " + player["first_name"])
         print("-----------------------------------")
 
     def start_tournament(self):
@@ -75,10 +91,12 @@ class View:
         return  answer
 
 
+
     """ ----- ----- ROUND ----- ----- """
     def play_first_round(self, start_date):
        first_round_title = f" 🎌 Round 1  {start_date} 🎌"
        self.message(first_round_title)
+
 
 
     """ ----- ----- MATCH ----- ----- """
@@ -113,6 +131,16 @@ class View:
 
     def end_match(self):
         input("🕦 Veuillez appuyer sur Entrer lorsque le match est terminer 🕦")
+
+    def display_new_score_if_win(self, name, last_name):
+            print("---------------------")
+            print(f"⭐ Félicitations à {name} {last_name} qui remporte ce match ! ⭐")
+            print("---------------------")
+    def display_new_score_if_equality(self):
+            print("---------------------")
+            print(f"⭐ Egalité parfaite pour nos deux joueurs ! ⭐")
+            print("---------------------")
+
 
 
 
