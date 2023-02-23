@@ -107,6 +107,12 @@ class View:
        first_round_title = f" 🎌 Round 1  {start_date} 🎌"
        self.message(first_round_title)
 
+    def ask_next_round_title(self, current_round):
+        ask_next_round = f"🎌 Voulez vous lancer le Round {current_round} ? 🎌"
+        self.view.ask_next_round_title(ask_next_round)
+        answer = input("(Oui/Non) :")
+        return answer
+
 
 
     """ ----- ----- MATCH ----- ----- """

@@ -168,6 +168,11 @@ class Controller:
         self.view.message(end_first_round)
         self.update_tournament_file(1, start_date, end_date, result_match_list, tournament)
 
+    def ask_next_round(self, tournament):
+        next_round = tournament["current_round"]
+
+    #def play_others_round(self):
+
     def mix_player(self, roster_list):
         """ Mélange les joueurs, et définit les matchs (joueur vs joueur) sous forme de liste"""
         random.shuffle(roster_list)
@@ -225,16 +230,19 @@ class Controller:
 
     def score_update_if_win(self, player):
         """ Mets à jour le score du joueur gagnant """
+        self.players_table.update({"total_score": 1}, self.user.last_name == player["last_name"] and self.user.first_name == player["first_name"])
         player["total_score"] = player["total_score"] + 1
         name = player["first_name"]
         last_name = player["last_name"]
         score = player["total_score"]
-        equality = False
+        print(score)
+        print(player)
         self.view.display_new_score_if_win(name, last_name)
 
     def score_update_if_equality(self, match_list):
         """ Mets à jour les scores des joueurs ayant fait match nul """
         for player in match_list:
+            self.players_table.update({"total_score": 0.5}, self.user.last_name == player["last_name"] and self.user.first_name == player["first_name"])
             player["total_score"] = player["total_score"] + 0.5
         self.view.display_new_score_if_equality()
 
