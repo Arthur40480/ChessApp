@@ -9,12 +9,12 @@ class Tournament:
         place,
         start_date,
         end_date,
-        nbr_rounds="4",
-        current_round,
-        round_list,
-        players_list,
         description,
-    ):
+        players_list,
+        round_list,
+        nbr_rounds=4,
+        current_round=1,
+   ):
         """ Initialise les valeurs d'un tournoi via le constructeur __init__ """
 
         self.name = name

@@ -64,10 +64,16 @@ class View:
     def new_tournament(self):
         name = input("Le nom du tournoi :")
         place = input("Où :")
-        start_date = date(input("Date de début (dd/mm/yyyy) :")).strftime("%d/%m/%Y")
-        end_date = date(input("Date de fin (dd/mm/yyyy) :")).strftime("%d/%m/%Y")
-        round = input("Nombre de tours (4 par défaut) :" or "4")
+        start_date_d = int(input("Jour de début (dd) :"))
+        start_date_m = int(input("Mois de début (mm) :"))
+        start_date_y = int(input("Année de début (yyyy) :"))
+        end_date_d = int(input("Jour de fin (dd) :"))
+        end_date_m = int(input("Mois de fin (mm) :"))
+        end_date_y = int(input("Année de fin (yyyy) :"))
+        round = int(input("Nombre de tours (4 par défaut) :" or 4))
+        current_round = int(input("Numéro du tour actuel :" or 1))
         description = input("Remarques générales :")
+        return name, place, start_date_d, start_date_m, start_date_y, end_date_d, end_date_m, end_date_y, round, current_round, description
 
     def tournament_roster_title(self):
         roster_title = "🏆 Veuillez choisir les joueurs participants au tournoi (8 joueurs max) 🏆"
@@ -84,10 +90,14 @@ class View:
             print(str(x) + " " + "➡" + " " + player["last_name"] + " " + player["first_name"])
         print("-----------------------------------")
 
+    def add_tournament_in_file_title(self):
+        add_tournament_in_file_title = "🎉 Tournoi bien enregistrer 🎉"
+        self.message(add_tournament_in_file_title)
+
     def start_tournament(self):
         start_title = "🚥 Voulez vous commencer le tournoi ? 🚥"
         self.message(start_title)
-        answer = input(" (Y/N) :")
+        answer = input(" (Oui/Non) :")
         return  answer
 
 
