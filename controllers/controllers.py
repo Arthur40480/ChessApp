@@ -1,6 +1,7 @@
 from views.views import View
 from models.player import Player
 from models.tournament import Tournament
+from models.tour import Tour
 from tinydb import TinyDB, Query, where
 from datetime import datetime
 from datetime import date
@@ -55,7 +56,7 @@ class Controller:
             self.view.message(error_message)
             self.display_menu()
 
-        player = Player(last_name, first_name, dath_of_birth, total_score=0)
+        player = Player(last_name, first_name, dath_of_birth)
         self.add_player_in_file(player.__dict__)
         new_player_again = input("🔄 Voulez vous enregistrer un autre joueur ? 🔄 (Oui/Non) :")
         if (new_player_again == "O" or new_player_again == "Oui" or new_player_again == "oui"):
@@ -73,7 +74,6 @@ class Controller:
                 people["last_name"],
                 people["first_name"],
                 people["dath_of_birth"],
-                people["total_score"],
             ).__dict__
             player_roster.append(player)
         return player_roster
@@ -161,37 +161,74 @@ class Controller:
         self.view.play_first_round(start_date)
         match_list = self.mix_player(roster_list)
         result_match_list = []
+        list_for_second_round = []
         for match in match_list:
             result_match_list.append(self.play_match(match))
         end_date = datetime.today().strftime('%d/%m/%Y-%H:%M:%S')
         end_first_round = f"🎌 Fin du Round 1 - {end_date} 🎌"
         self.view.message(end_first_round)
         self.update_tournament_file(1, start_date, end_date, result_match_list, tournament)
+        for match in result_match_list:
+            for player in match:
+                list_for_second_round.append(player)
+        self.ask_next_round(tournament, list_for_second_round, result_match_list)
 
-    def ask_next_round(self, tournament):
-        next_round = tournament["current_round"]
+    def play_others_rounds(self, roster_list, result_match_list):
+        """ Lance les rounds suivants """
+        sorted_match_list = sorted(roster_list, key=lambda player: player[1], reverse=True)
+        match_list = self.player_pair_by_score(sorted_match_list, result_match_list)
+        print(result_match_list)
 
-    #def play_others_round(self):
+    def player_pair_by_score(self, roster_list, result_match_list):
+        """ Définit les matchs en fonction des score des joueurs """
+        size = 2
+        match_list = [roster_list[x: x + size] for x in range(0, len(roster_list), size)]
+        for match in match_list:
+            self.verify_match(match, result_match_list)
+        return match_list
+
+    def verify_match(self, match, result_match_list):
+        """ Vérifie que les mêmes matchs ne se reproduisent pas dans le tournoi """
+        player_verified_1 = match[0][0]["last_name"]
+        player_verified_2 = match[1][0]["last_name"]
+        for match in result_match_list:
+            previous_match_player_1 = match[0][0]["last_name"]
+            previous_match_player_2 = match[1][0]["last_name"]
+            if (player_verified_1 == previous_match_player_1 and player_verified_2 == previous_match_player_2):
+                print("Ce match à déjà eu lieu !")
+            if (player_verified_1 == previous_match_player_2 and player_verified_2 == previous_match_player_1):
+                print("Ce match à déjà eu lieu !")
+            else:
+                print("Ce match n'a jamais eu lieu !")
+
+    def ask_next_round(self, tournament, roster_list, result_match_list):
+        """ Demande si on lance le round suivant """
+        current_tournament = self.tournament_table.get(self.user.name == tournament["name"])
+        next_round = current_tournament["current_round"]
+        answer = self.view.ask_next_round_title(next_round)
+        if (answer == "O" or answer == "Oui" or answer == "oui"):
+            self.play_others_rounds(roster_list, result_match_list)
+        else:
+            self.display_menu()
 
     def mix_player(self, roster_list):
-        """ Mélange les joueurs, et définit les matchs (joueur vs joueur) sous forme de liste"""
+        """ Mélange les joueurs, et définit les matchs (joueur vs joueur) sous forme de liste """
         random.shuffle(roster_list)
         size = 2
         sub_list = [roster_list[x: x + size] for x in range(0, len(roster_list), size)]
         return sub_list
 
     def update_tournament_file(self, current_round, start_date, end_date, match_list, tournament):
+        """ Enregistre les nouvelles données dans le fichier JSON """
         name = tournament["name"]
-        round_list = [
+        round = Tour(
             f"Round {current_round}",
-            {
-                "Début du round": start_date,
-                "Fin du round": end_date,
-                "Liste des matchs": match_list
-             }
-        ]
+            start_date,
+            end_date,
+            match_list
+        )
         self.tournament_table.upsert({"name": name, "current_round": 2}, self.user.name == name)
-        self.tournament_table.upsert({"name": name, "round_list": round_list}, self.user.name == name)
+        self.tournament_table.upsert({"name": name, "round_list": round.__dict__}, self.user.name == name)
 
 
 
@@ -208,17 +245,14 @@ class Controller:
         result = self.view.match_result(first_player, second_player)
         if result == 1:
             first_player_score = 1
-            self.score_update_if_win(match_list[0])
         if result == 2:
             second_player_score = 1
-            self.score_update_if_win(match_list[1])
         if result == 3:
             first_player_score = 0.5
             second_player_score = 0.5
-            self.score_update_if_equality(match_list)
         match_result = (
-            [first_player, first_player_score],
-            [second_player, second_player_score],
+            [match_list[0], first_player_score],
+            [match_list[1], second_player_score],
         )
         return match_result
 
@@ -228,23 +262,7 @@ class Controller:
         random.shuffle(color)
         self.view.color_draw(first_player, second_player, color)
 
-    def score_update_if_win(self, player):
-        """ Mets à jour le score du joueur gagnant """
-        self.players_table.update({"total_score": 1}, self.user.last_name == player["last_name"] and self.user.first_name == player["first_name"])
-        player["total_score"] = player["total_score"] + 1
-        name = player["first_name"]
-        last_name = player["last_name"]
-        score = player["total_score"]
-        print(score)
-        print(player)
-        self.view.display_new_score_if_win(name, last_name)
 
-    def score_update_if_equality(self, match_list):
-        """ Mets à jour les scores des joueurs ayant fait match nul """
-        for player in match_list:
-            self.players_table.update({"total_score": 0.5}, self.user.last_name == player["last_name"] and self.user.first_name == player["first_name"])
-            player["total_score"] = player["total_score"] + 0.5
-        self.view.display_new_score_if_equality()
 
 
 

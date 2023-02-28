@@ -109,7 +109,7 @@ class View:
 
     def ask_next_round_title(self, current_round):
         ask_next_round = f"🎌 Voulez vous lancer le Round {current_round} ? 🎌"
-        self.view.ask_next_round_title(ask_next_round)
+        self.message(ask_next_round)
         answer = input("(Oui/Non) :")
         return answer
 
@@ -148,14 +148,7 @@ class View:
     def end_match(self):
         input("🕦 Veuillez appuyer sur Entrer lorsque le match est terminer 🕦")
 
-    def display_new_score_if_win(self, name, last_name):
-            print("---------------------")
-            print(f"⭐ Félicitations à {name} {last_name} qui remporte ce match ! ⭐")
-            print("---------------------")
-    def display_new_score_if_equality(self):
-            print("---------------------")
-            print(f"⭐ Egalité parfaite pour nos deux joueurs ! ⭐")
-            print("---------------------")
+
 
 
 
