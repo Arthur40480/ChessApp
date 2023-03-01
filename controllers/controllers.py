@@ -19,21 +19,48 @@ class Controller:
         self.view = View()
         self.user = Query()
 
-    def display_title(self):
-        """ Fait apparaître le titre """
-        welcom_title = "Bienvenue dans l'application de tournois d'echecs ♟️"
-        self.view.message(welcom_title)
-        self.display_menu()
-
     def display_menu(self):
         """ Fait apparaître le menu """
+        welcom_title = "♟️ Bienvenue dans l'application de tournois d'echecs ♟️"
+        self.view.message(welcom_title)
         user_choice = self.view.menu()
         if user_choice == 1:
             self.new_player()
         if user_choice == 2:
-            self.display_player_list()
-        if user_choice == 3:
             self.new_tournament()
+        if user_choice == 3:
+            self.display_rapport_menu_title()
+        if user_choice == 4:
+            exit()
+
+    def display_rapport_menu_title(self):
+        """ Fait apparaître le titre """
+        rapport_title = "📃 Menu des rapports 📃"
+        self.view.message(rapport_title)
+        self.display_menu_rapport()
+
+    def display_menu_rapport(self):
+        """ Fait apparaître le menu des rapports """
+        user_choice = self.view.rapport_menu()
+        if user_choice == 1:
+            self.display_player_list()
+        if user_choice == 2:
+            self.display_tournament_list()
+        if user_choice == 3:
+            self.display_roster_list()
+        if user_choice == 4:
+            exit()
+        if user_choice == 5:
+            self.display_menu()
+
+    def back_to_menu(self):
+        """ Permet de revenir au menu principal """
+        answer = self.view.back_to_menu()
+        if (answer == "N" or answer == "Non" or answer == "non"):
+            exit()
+        else:
+            self.display_menu()
+
 
 
 
@@ -88,6 +115,17 @@ class Controller:
         self.view.player_list_title()
         players = sorted(self.players_table, key=lambda player: player['last_name'])
         self.view.display_player_list(players)
+        self.back_to_menu()
+
+    def display_roster_list(self):
+        """ Affiche les joueurs participant au tournoi séléctionner """
+        tournament = self.tournament_list()
+        self.view.display_tournament_list(tournament)
+        tournament_select = int(input("Veuillez ajouter le numéro du tournoi:"))
+        tournament_select = tournament_select - 1
+        self.view.display_roster_list(tournament[tournament_select])
+        self.back_to_menu()
+
 
 
 
@@ -132,7 +170,7 @@ class Controller:
         self.view.tournament_roster(players)
         while len(roster_list) < 8:
             try:
-                number_select = int(input("Veuillez ajouter le numéro du joueur séléctionner :"))
+                number_select = int(input("Veuillez ajouter le numéro du joueur séléctionner:"))
                 if number_select > 0 and number_select <= len(players):
                     player_select = (number_select - 1)
                     roster_list.append(players[player_select])
@@ -151,6 +189,31 @@ class Controller:
         else:
             self.display_menu()
 
+    def display_tournament_list(self):
+        """ Affiche la liste des tous les tournois """
+        self.view.tournament_list_title()
+        tournament = self.tournament_table
+        self.view.display_tournament_list(tournament)
+        self.back_to_menu()
+
+    def tournament_list(self):
+        """ Créer une liste de tous les tournois enregistrés """
+        tournament_table = self.tournament_table
+        tournament_list = []
+        for tournament in tournament_table:
+            tournaments = Tournament(
+                tournament["name"],
+                tournament["place"],
+                tournament["start_date"],
+                tournament["end_date"],
+                tournament["description"],
+                tournament["players_list"],
+                tournament["round_list"],
+                tournament["nbr_rounds"],
+                tournament["current_round"],
+            ).__dict__
+            tournament_list.append(tournaments)
+        return tournament_list
 
 
     """ ----- ----- ROUND ----- ----- """

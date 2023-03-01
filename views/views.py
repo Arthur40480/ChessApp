@@ -9,26 +9,57 @@ class View:
         print("-----------------------------------")
 
     def menu(self):
-        print("1: Ajouter un joueur ")
-        print("2: Liste des joueurs ")
-        print("3: Créer un tournoi ")
-        print("4: Liste des tournois")
-        print("5: Quittez l'application")
+        print("🙋 Ajouter un joueur ➡ 1 ")
+        print("🏆 Créer un tournoi ➡ 2")
+        print("📃 Afficher un rapport ➡ 3")
+        print("❌ Quittez l'application ➡ 4")
         print("-----------------------------------")
 
         try:
-            user_choice = int(input("Entrez votre choix (1 - 6) :"))
-            if user_choice > 0 and user_choice <= 6:
+            user_choice = int(input("Entrez votre choix (1 - 4) :"))
+            if user_choice > 0 and user_choice <= 4:
                 return user_choice
             else:
                 error_message = "⚠️ Veuillez choisir un nombre compris dans la liste ⚠️"
                 self.message(error_message)
+                self.menu()
 
         except ValueError:
             """ Except nous permet de gérer une erreur 
             ➡ Si l'utilisateur rentre d'autres caractères que des nombres"""
             error_message = "🔢️ Veuillez choisir un nombre 🔢️"
             self.message(error_message)
+            self.menu()
+
+    def rapport_menu(self):
+        print("🙋 Afficher tous les joueurs par ordre alphabétique ➡ 1 ")
+        print("🏆 Afficher tous les tournois ➡ 2")
+        print("🙆‍♀️ Afficher les joueurs d'un tournoi par ordre alphabétique ➡ 3")
+        print("📚 Afficher la liste de tous les tours d'un tournoi ainsi que tous les matchs de chaque tour ➡ 4")
+        print("❌ Retour à l'accueil ➡ 5")
+        print("-----------------------------------")
+
+        try:
+            user_choice = int(input("Entrez votre choix (1 - 5) :"))
+            if user_choice > 0 and user_choice <= 5:
+                return user_choice
+            else:
+                error_message = "⚠️ Veuillez choisir un nombre compris dans la liste ⚠️"
+                self.message(error_message)
+                self.rapport_menu()
+
+        except ValueError:
+            """ Except nous permet de gérer une erreur 
+            ➡ Si l'utilisateur rentre d'autres caractères que des nombres"""
+            error_message = "🔢️ Veuillez choisir un nombre 🔢️"
+            self.message(error_message)
+            self.rapport_menu()
+
+    def back_to_menu(self):
+        print("-----------------------------------")
+        answer = input("💒 Revenir à l'acceuil ? (Oui/Non): ")
+        print("-----------------------------------")
+        return answer
 
 
 
@@ -52,7 +83,22 @@ class View:
 
     def display_player_list(self, players_list):
         for player in players_list:
-            print(player)
+            last_name = player["last_name"]
+            first_name = player["first_name"]
+            age = player["dath_of_birth"]
+            print(f"{last_name} {first_name}, date de naissance: {age}")
+
+    def display_roster_list(self, tournament):
+        tournament_name = tournament["name"]
+        roster_list_title = f"📃 Voici les joueurs participants au tournoi: {tournament_name} 📃"
+        self.message(roster_list_title)
+        roster_list = tournament["players_list"]
+        for player in roster_list:
+            last_name = player["last_name"]
+            first_name = player["first_name"]
+            age = player["dath_of_birth"]
+            print(f"{last_name} {first_name}, date de naissance: {age}")
+
 
 
 
@@ -99,6 +145,22 @@ class View:
         self.message(start_title)
         answer = input(" (Oui/Non) :")
         return  answer
+
+    def tournament_list_title(self):
+        list_title = " 📃 Liste des tournois 📃"
+        self.message(list_title)
+
+    def display_tournament_list(self, tournament_list):
+        x = 0
+        for tournament in tournament_list:
+            x = x + 1
+            name = tournament["name"]
+            place = tournament["place"]
+            start_date = tournament["start_date"]
+            end_date = tournament["end_date"]
+            print(f"{x}. ➡ Nom du tournoi: {name}, Lieu: {place}, date de début: {start_date}, date de fin: {end_date}")
+        print("-----------------------------------")
+
 
 
 
