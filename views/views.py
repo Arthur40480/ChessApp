@@ -71,7 +71,8 @@ class View:
         b_month = int(input("Mois de naissance :"))
         b_year = int(input("Année de naissance :"))
         dath_of_birth = date(b_year, b_month, b_day).strftime("%d/%m/%y")
-        return first_name, last_name, dath_of_birth
+        chess_id = input("Identifiant national d'échecs (ex: AB12345) :")
+        return first_name, last_name, dath_of_birth, chess_id
 
     def player_list_title(self):
         list_title = " 📃 Liste des joueurs enregistrés 📃"
@@ -86,7 +87,8 @@ class View:
             last_name = player["last_name"]
             first_name = player["first_name"]
             age = player["dath_of_birth"]
-            print(f"{last_name} {first_name}, date de naissance: {age}")
+            chess_id = player["chess_id"]
+            print(f"{last_name} {first_name}, date de naissance: {age}, identifiant national d'échecs: {chess_id}")
 
     def display_roster_list(self, tournament):
         tournament_name = tournament["name"]
@@ -97,7 +99,8 @@ class View:
             last_name = player["last_name"]
             first_name = player["first_name"]
             age = player["dath_of_birth"]
-            print(f"{last_name} {first_name}, date de naissance: {age}")
+            chess_id = player["chess_id"]
+            print(f"{last_name} {first_name}, date de naissance: {age}, identifiant national d'échecs: {chess_id}")
 
 
 
