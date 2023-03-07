@@ -245,54 +245,39 @@ class Controller:
         for match_list in result_match_list:
             for match in match_list:
                 list_of_all_matchs.append(match)
-
         self.ask_next_round(tournament, list_of_all_matchs, result_match_list)
 
     def play_others_rounds(self, list_of_all_matchs, result_match_list):
-        """ Lance les rounds suivants """
+        """ Définit les matchs, et évite de retomber sur le même joueur """
         sorted_match_list = sorted(list_of_all_matchs, key=lambda player: player[1], reverse=True)
         match_list = []
-        for i in range(4):
-            z = 1
-            print(z)
+        while len(sorted_match_list) != 0:
+            i = 1
             player1 = sorted_match_list[0]
-            player1_id = player1[0]["chess_id"]
-            player2 = sorted_match_list[z]
-            player2_id = player2[0]["chess_id"]
-            match = ([player1, player2])
-            print(match)
-            match_verify = ([player2, player1])
-            print(match_verify)
-            print(result_match_list)
-            if match in result_match_list and match_verify in result_match_list:
-                print("Déjà jouer !")
-                z += 1
-            else:
-                print("Ce match n'a pas été jouer !")
-                match_plus = [player1, player2]
-                match_list.append(match_plus)
-                del sorted_match_list[z]
+            player2 = sorted_match_list[i]
+            match_1 = (player1, player2)
+            match_verify = (player2, player1)
+
+            if match_1 not in result_match_list and match_verify not in result_match_list:
+                match_list.append(match_1)
+                del sorted_match_list[i]
                 del sorted_match_list[0]
 
-            """for match in result_match_list:
-                id_1 = match[0][0]["chess_id"]
-                id_2 = match[1][0]["chess_id"]
-                if id_1 == player1_id and id_2 == player2_id:
-                    print("match déja joué")
-                    z += 1
-                    break
-
-
-                else:
-                    print("Ce match n'a pas été jouer !")
-                    match_plus = [player1, player2]
-                    match_list.append(match_plus)
-                    del sorted_match_list[z]
-                    del sorted_match_list[0]
-                    break"""
-        print(match_list)
-
-
+            else:
+                print("Le match à déjà été jouer")
+                i += i
+                for n in range(len(sorted_match_list)):
+                    match_1 = (sorted_match_list[0], sorted_match_list[i])
+                    match_verify = (sorted_match_list[i], sorted_match_list[0])
+                    if match_1 not in result_match_list and match_verify not in result_match_list:
+                        match_list.append(match_1)
+                        del sorted_match_list[i]
+                        del sorted_match_list[0]
+                        print(sorted_match_list)
+                        break
+                    else:
+                        i += 1
+        return match_list
 
     def ask_next_round(self, tournament, list_of_all_matchs, result_match_list):
         """ Demande si on lance le round suivant """
