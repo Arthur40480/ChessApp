@@ -168,9 +168,9 @@ class View:
 
 
     """ ----- ----- ROUND ----- ----- """
-    def play_first_round(self, start_date):
-       first_round_title = f" 🎌 Round 1  {start_date} 🎌"
-       self.message(first_round_title)
+    def play_round(self, current_round, start_date):
+       round_title = f" 🎌 Round {current_round}  {start_date} 🎌"
+       self.message(round_title)
 
     def ask_next_round_title(self, current_round):
         ask_next_round = f"🎌 Voulez vous lancer le Round {current_round} ? 🎌"

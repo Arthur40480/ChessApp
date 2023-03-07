@@ -75,10 +75,16 @@ class Controller:
         dath_of_birth = data_player[2]
         chess_id = data_player[3]
 
-
         """ On viens vérifier si le joueur n'existe pas déjà """
+        same_chess_id = self.players_table.search(self.user.chess_id == chess_id)
         same_name = self.players_table.search(self.user.first_name == first_name)
         same_last_name = self.players_table.search(self.user.last_name == last_name)
+
+        if same_chess_id:
+            error_id_message = "⚠️ Ce Chess ID est déjà utilisé ! ⚠️"
+            self.view.message(error_id_message)
+            self.display_menu()
+
         if same_last_name and same_name:
             error_message = "⚠️ Ce joueur est déjà enregistrer ⚠️"
             self.view.message(error_message)
@@ -102,7 +108,7 @@ class Controller:
                 people["last_name"],
                 people["first_name"],
                 people["dath_of_birth"],
-                people["chess_id"]
+                people["chess_id"],
             ).__dict__
             player_roster.append(player)
         return player_roster
@@ -217,19 +223,29 @@ class Controller:
             tournament_list.append(tournaments)
         return tournament_list
 
+    def end_tournament(self, tournament):
+        name = tournament["name"]
+        end_tournament_title = f" Fin du tournoi {name} !"
+        self.view.message(end_tournament_title)
+
 
     """ ----- ----- ROUND ----- ----- """
     def play_first_round(self, tournament):
         """ Annonce le premier Round """
         roster_list = tournament["players_list"]
+        curent_round = tournament["current_round"]
         start_date = datetime.today().strftime('%d/%m/%Y-%H:%M:%S')
-        self.view.play_first_round(start_date)
+        self.view.play_round(curent_round, start_date)
 
         """ On définit les matchs """
-        match_list = self.mix_player(roster_list)
+        match_list = self.mix_player_first_round(roster_list)
         result_match_list = []
+
+        """ On créer une liste qui vas contenir l'ensemble des matchs du tournoi """
+        list_all_matchs = []
         for match in match_list:
             """ Pour chaques match dans la liste, on viens chercher le résultat, et on l'ajoute à la liste de résultat """
+            list_all_matchs.append(match)
             result_match_list.append(self.play_match(match))
         end_date = datetime.today().strftime('%d/%m/%Y-%H:%M:%S')
 
@@ -241,71 +257,103 @@ class Controller:
         self.update_tournament_file(1, start_date, end_date, result_match_list, tournament)
 
         """ On créer une liste qui vas contenir l'ensemble des matchs du tournoi """
-        list_of_all_matchs = []
+        list_player_current_score = []
         for match_list in result_match_list:
             for match in match_list:
-                list_of_all_matchs.append(match)
-        self.ask_next_round(tournament, list_of_all_matchs, result_match_list)
+                list_player_current_score.append(match)
 
-    def play_others_rounds(self, list_of_all_matchs, result_match_list):
-        """ Définit les matchs, et évite de retomber sur le même joueur """
-        sorted_match_list = sorted(list_of_all_matchs, key=lambda player: player[1], reverse=True)
-        match_list = []
-        while len(sorted_match_list) != 0:
-            i = 1
-            player1 = sorted_match_list[0]
-            player2 = sorted_match_list[i]
-            match_1 = (player1, player2)
-            match_verify = (player2, player1)
+        self.ask_next_round(tournament, list_all_matchs, list_player_current_score)
 
-            if match_1 not in result_match_list and match_verify not in result_match_list:
-                match_list.append(match_1)
-                del sorted_match_list[i]
-                del sorted_match_list[0]
-
-            else:
-                print("Le match à déjà été jouer")
-                i += i
-                for n in range(len(sorted_match_list)):
-                    match_1 = (sorted_match_list[0], sorted_match_list[i])
-                    match_verify = (sorted_match_list[i], sorted_match_list[0])
-                    if match_1 not in result_match_list and match_verify not in result_match_list:
-                        match_list.append(match_1)
-                        del sorted_match_list[i]
-                        del sorted_match_list[0]
-                        print(sorted_match_list)
-                        break
-                    else:
-                        i += 1
-        return match_list
-
-    def ask_next_round(self, tournament, list_of_all_matchs, result_match_list):
-        """ Demande si on lance le round suivant """
-        current_tournament = self.tournament_table.get(self.user.name == tournament["name"])
-        next_round = current_tournament["current_round"]
-        answer = self.view.ask_next_round_title(next_round)
-        if (answer == "O" or answer == "Oui" or answer == "oui"):
-            self.play_others_rounds(list_of_all_matchs, result_match_list)
-        else:
-            self.display_menu()
-
-    def mix_player(self, roster_list):
+    def mix_player_first_round(self, roster_list):
         """ Mélange les joueurs, et définit les matchs (joueur vs joueur) sous forme de liste """
         random.shuffle(roster_list)
         size = 2
         sub_list = [roster_list[x: x + size] for x in range(0, len(roster_list), size)]
         return sub_list
 
+    def play_other_round(self, tournament, list_all_matchs, list_player_current_score):
+        """ Annonce les autres Round """
+        start_date = datetime.today().strftime('%d/%m/%Y-%H:%M:%S')
+        current_round = tournament["current_round"]
+        self.view.play_round(current_round, start_date)
+
+        """ On définit les matchs """
+        match_list = self.mix_player(list_all_matchs, list_player_current_score)
+        result_match_list = []
+        for match in match_list:
+            """ On rajoute les matchs dans notre liste de matchs """
+            list_all_matchs.append(match)
+            result_match_list.append(self.play_match(match))
+        end_date = datetime.today().strftime('%d/%m/%Y-%H:%M:%S')
+
+        """ Annonce de la fin du Round """
+        end_round = f"🎌 Fin du Round {current_round} - {end_date} 🎌"
+        self.view.message(end_round)
+
+        """ On viens mettre à jour le round actuel, on enregistre le round dans la liste de round du tournoi """
+        self.update_tournament_file(current_round, start_date, end_date, result_match_list, tournament)
+
+        nbr_round = tournament["nbr_rounds"]
+        if int(current_round) == int(nbr_round):
+            self.end_tournament(tournament)
+        else:
+            self.ask_next_round(tournament, list_all_matchs, list_player_current_score)
+
+
+    def mix_player(self, list_all_matchs, list_player_current_score):
+        """ Définit les matchs, et évite de retomber sur le même joueur """
+        sorted_match_list = sorted(list_player_current_score, key=lambda player: player[1], reverse=True)
+        match_list = []
+        while len(sorted_match_list) != 0:
+            i = 1
+            print(f"Le premier i {i}")
+            player1 = sorted_match_list[0][0]
+            player2 = sorted_match_list[i][0]
+            match_1 = [player1, player2]
+            match_verify = [player2, player1]
+            if match_1 not in list_all_matchs and match_verify not in list_all_matchs:
+                match_list.append([player1, player2])
+                del sorted_match_list[i]
+                del sorted_match_list[0]
+
+            else:
+                print("Le match à déjà été jouer")
+                i += 1
+                for n in range(len(sorted_match_list)):
+                    match_1 = [player1, player2]
+                    match_verify = [player2, player1]
+                    if match_1 not in list_all_matchs and match_verify not in list_all_matchs:
+                        match_list.append([player1, player2])
+                        del sorted_match_list[i]
+                        del sorted_match_list[0]
+                        break
+                    else:
+                        i += 1
+        print(match_list)
+        return match_list
+
+    def ask_next_round(self, tournament, list_all_matchs, list_player_current_score):
+        """ Demande si on lance le round suivant """
+        current_tournament = self.tournament_table.get(self.user.name == tournament["name"])
+        next_round = current_tournament["current_round"]
+        answer = self.view.ask_next_round_title(next_round)
+        if (answer == "O" or answer == "Oui" or answer == "oui"):
+            self.play_other_round(current_tournament, list_all_matchs, list_player_current_score)
+        else:
+            self.display_menu()
+
     def update_tournament_file(self, current_round, start_date, end_date, match_list, tournament):
         """ Enregistre les nouvelles données dans le fichier JSON """
         name = tournament["name"]
+
+        next_round = current_round + 1
         round = Tour(
             f"Round {current_round}",
             start_date,
             end_date,
             match_list
         )
-        self.tournament_table.upsert({"name": name, "current_round": 2}, self.user.name == name)
+        self.tournament_table.upsert({"name": name, "current_round": next_round}, self.user.name == name)
         self.tournament_table.upsert({"name": name, "round_list": round.__dict__}, self.user.name == name)
 
 
