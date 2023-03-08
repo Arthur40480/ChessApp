@@ -102,6 +102,12 @@ class View:
             chess_id = player["chess_id"]
             print(f"{last_name} {first_name}, date de naissance: {age}, identifiant national d'échecs: {chess_id}")
 
+    def display_victorious_player(self, ranking):
+        victorious_player = ranking[0][0]["last_name"] + " " + ranking[0][0]["first_name"]
+        nbr_points = ranking[0][1]
+        print("🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊")
+        print(f"Le vainqueur du tournoi est {victorious_player} avec {nbr_points} points ! Félicitations 🏆 !")
+        print("🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉")
 
 
 
@@ -166,7 +172,6 @@ class View:
 
 
 
-
     """ ----- ----- ROUND ----- ----- """
     def play_round(self, current_round, start_date):
        round_title = f" 🎌 Round {current_round}  {start_date} 🎌"
@@ -176,6 +181,7 @@ class View:
         ask_next_round = f"🎌 Voulez vous lancer le Round {current_round} ? 🎌"
         self.message(ask_next_round)
         answer = input("(Oui/Non) :")
+        print("-----------------------------------")
         return answer
 
 

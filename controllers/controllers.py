@@ -134,6 +134,10 @@ class Controller:
         self.view.display_roster_list(tournament[tournament_select])
         self.back_to_menu()
 
+    def display_victorious_player(self, ranking):
+        """ On trie la liste des score finaux pour annoncer le vainqueur """
+        ranking_list = sorted(ranking, key=lambda player: player[1], reverse=True)
+        self.view.display_victorious_player(ranking_list)
 
 
 
@@ -244,8 +248,8 @@ class Controller:
         """ On créer une liste qui vas contenir l'ensemble des matchs du tournoi """
         list_all_matchs = []
         for match in match_list:
-            """ Pour chaques match dans la liste, on viens chercher le résultat, et on l'ajoute à la liste de résultat """
             list_all_matchs.append(match)
+            """ Pour chaques match dans la liste, on viens chercher le résultat, et on l'ajoute à la liste de résultat """
             result_match_list.append(self.play_match_first_round(match))
         end_date = datetime.today().strftime('%d/%m/%Y-%H:%M:%S')
 
@@ -256,7 +260,7 @@ class Controller:
         """ On viens mettre à jour le round actuel, on enregistre le round dans la liste de round du tournoi """
         self.update_tournament_file(1, start_date, end_date, result_match_list, tournament)
 
-        """ On créer une liste qui vas contenir l'ensemble des matchs du tournoi """
+        """ On créer une liste qui vas contenir les scores actuels des joueurs """
         list_player_current_score = []
         for match_list in result_match_list:
             for match in match_list:
@@ -285,7 +289,6 @@ class Controller:
             list_all_matchs.append([match[0], match[2]])
             result_match_list.append(self.play_match_other_rounds(match))
         end_date = datetime.today().strftime('%d/%m/%Y-%H:%M:%S')
-        print(list_all_matchs)
 
         """ Annonce de la fin du Round """
         end_round = f"🎌 Fin du Round {current_round} - {end_date} 🎌"
@@ -294,15 +297,24 @@ class Controller:
         """ On viens mettre à jour le round actuel, on enregistre le round dans la liste de round du tournoi """
         self.update_tournament_file(current_round, start_date, end_date, result_match_list, tournament)
 
+        """ On créer une liste qui vas contenir les scores actuels des joueurs """
+        list_current_score = []
+        for match_list in result_match_list:
+            for match in match_list:
+                list_current_score.append(match)
+
+        """ Si on arrive au dernier round, alors le tournoi est finis """
         nbr_round = tournament["nbr_rounds"]
         if int(current_round) == int(nbr_round):
             self.end_tournament(tournament)
+            self.display_victorious_player(list_current_score)
         else:
-            self.ask_next_round(tournament, list_all_matchs, list_player_current_score)
+            self.ask_next_round(tournament, list_all_matchs, list_current_score)
 
 
     def mix_player(self, list_all_matchs, list_player_current_score):
         """ Définit les matchs, et évite de retomber sur le même joueur """
+        print(list_player_current_score)
         sorted_match_list = sorted(list_player_current_score, key=lambda player: player[1], reverse=True)
         match_list = []
         while len(sorted_match_list) != 0:
@@ -335,7 +347,6 @@ class Controller:
                         break
                     else:
                         i += 1
-        print(match_list)
         return match_list
 
     def ask_next_round(self, tournament, list_all_matchs, list_player_current_score):
