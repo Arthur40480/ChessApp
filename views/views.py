@@ -102,6 +102,21 @@ class View:
             chess_id = player["chess_id"]
             print(f"{last_name} {first_name}, date de naissance: {age}, identifiant national d'échecs: {chess_id}")
 
+    def display_round_and_match(self, tournament):
+        round_list = tournament["round_list"]
+        for match in round_list:
+            print("📃 " + match["nom"] + " 📃")
+            print("-----------------------------------")
+            print("🕙 Début du round: " + match["date_heure_debut"] + "- Fin du round: " + match["date_heure_fin"] + " 🕙")
+            match_list = match["match_list"]
+            for matchs in match_list:
+                player1 = matchs[0][0]["last_name"] + " " + matchs[0][0]["first_name"]
+                player2 = matchs[1][0]["last_name"] + " " + matchs[1][0]["first_name"]
+                score_player1 = matchs[0][1]
+                score_player2 = matchs[1][1]
+                print(f"{player1}, nombre de points: {score_player1} contre {player2}, nombre de points: {score_player2}")
+            print("-----------------------------------")
+
     def display_victorious_player(self, ranking):
         victorious_player = ranking[0][0]["last_name"] + " " + ranking[0][0]["first_name"]
         nbr_points = ranking[0][1]

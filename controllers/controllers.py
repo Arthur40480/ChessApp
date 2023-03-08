@@ -49,7 +49,7 @@ class Controller:
         if user_choice == 3:
             self.display_roster_list()
         if user_choice == 4:
-            exit()
+            self.display_round_and_match()
         if user_choice == 5:
             self.display_menu()
 
@@ -60,8 +60,6 @@ class Controller:
             exit()
         else:
             self.display_menu()
-
-
 
 
     """ ----- ----- Joueur ----- ----- """
@@ -134,11 +132,19 @@ class Controller:
         self.view.display_roster_list(tournament[tournament_select])
         self.back_to_menu()
 
+    def display_round_and_match(self):
+        """ Affiche les rounds, ainsi que les matchs de chaque round du tournoi séléctionner """
+        tournament = self.tournament_list()
+        self.view.display_tournament_list(tournament)
+        tournament_select = int(input("Veuillez ajouter le numéro du tournoi:"))
+        tournament_select = tournament_select - 1
+        self.view.display_round_and_match(tournament[tournament_select])
+        self.back_to_menu()
+
     def display_victorious_player(self, ranking):
         """ On trie la liste des score finaux pour annoncer le vainqueur """
         ranking_list = sorted(ranking, key=lambda player: player[1], reverse=True)
         self.view.display_victorious_player(ranking_list)
-
 
 
     """ ----- ----- TOURNOI ----- ----- """
@@ -297,6 +303,7 @@ class Controller:
         """ On viens mettre à jour le round actuel, on enregistre le round dans la liste de round du tournoi """
         self.update_tournament_file(current_round, start_date, end_date, result_match_list, tournament)
 
+
         """ On créer une liste qui vas contenir les scores actuels des joueurs """
         list_current_score = []
         for match_list in result_match_list:
@@ -308,13 +315,13 @@ class Controller:
         if int(current_round) == int(nbr_round):
             self.end_tournament(tournament)
             self.display_victorious_player(list_current_score)
+            self.back_to_menu()
         else:
             self.ask_next_round(tournament, list_all_matchs, list_current_score)
 
 
     def mix_player(self, list_all_matchs, list_player_current_score):
         """ Définit les matchs, et évite de retomber sur le même joueur """
-        print(list_player_current_score)
         sorted_match_list = sorted(list_player_current_score, key=lambda player: player[1], reverse=True)
         match_list = []
         while len(sorted_match_list) != 0:
@@ -325,7 +332,8 @@ class Controller:
             score_player2 = sorted_match_list[i][1]
             match_1 = [player1, player2]
             match_verify = [player2, player1]
-            if match_1 not in list_all_matchs and match_verify not in list_all_matchs:
+
+            if match_1 not in list_all_matchs and match_verify not in list_all_matchs or len(sorted_match_list) == 2:
                 match_list.append([player1, score_player1, player2, score_player2])
                 del sorted_match_list[i]
                 del sorted_match_list[0]
@@ -349,6 +357,8 @@ class Controller:
                         i += 1
         return match_list
 
+
+
     def ask_next_round(self, tournament, list_all_matchs, list_player_current_score):
         """ Demande si on lance le round suivant """
         current_tournament = self.tournament_table.get(self.user.name == tournament["name"])
@@ -362,7 +372,7 @@ class Controller:
     def update_tournament_file(self, current_round, start_date, end_date, match_list, tournament):
         """ Enregistre les nouvelles données dans le fichier JSON """
         name = tournament["name"]
-
+        round_list = tournament["round_list"]
         next_round = current_round + 1
         round = Tour(
             f"Round {current_round}",
@@ -370,8 +380,12 @@ class Controller:
             end_date,
             match_list
         )
+        index_list = int(current_round) - 1
+        round_list.insert(index_list, round.__dict__)
+
+
         self.tournament_table.upsert({"name": name, "current_round": next_round}, self.user.name == name)
-        self.tournament_table.upsert({"name": name, "round_list": round.__dict__}, self.user.name == name)
+        self.tournament_table.upsert({"name": name, "round_list": round_list}, self.user.name == name)
 
 
 
