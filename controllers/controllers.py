@@ -246,7 +246,7 @@ class Controller:
         for match in match_list:
             """ Pour chaques match dans la liste, on viens chercher le résultat, et on l'ajoute à la liste de résultat """
             list_all_matchs.append(match)
-            result_match_list.append(self.play_match(match))
+            result_match_list.append(self.play_match_first_round(match))
         end_date = datetime.today().strftime('%d/%m/%Y-%H:%M:%S')
 
         """ Annonce de la fin du premier Round """
@@ -282,9 +282,10 @@ class Controller:
         result_match_list = []
         for match in match_list:
             """ On rajoute les matchs dans notre liste de matchs """
-            list_all_matchs.append(match)
-            result_match_list.append(self.play_match(match))
+            list_all_matchs.append([match[0], match[2]])
+            result_match_list.append(self.play_match_other_rounds(match))
         end_date = datetime.today().strftime('%d/%m/%Y-%H:%M:%S')
+        print(list_all_matchs)
 
         """ Annonce de la fin du Round """
         end_round = f"🎌 Fin du Round {current_round} - {end_date} 🎌"
@@ -306,24 +307,29 @@ class Controller:
         match_list = []
         while len(sorted_match_list) != 0:
             i = 1
-            print(f"Le premier i {i}")
             player1 = sorted_match_list[0][0]
+            score_player1 = sorted_match_list[0][1]
             player2 = sorted_match_list[i][0]
+            score_player2 = sorted_match_list[i][1]
             match_1 = [player1, player2]
             match_verify = [player2, player1]
             if match_1 not in list_all_matchs and match_verify not in list_all_matchs:
-                match_list.append([player1, player2])
+                match_list.append([player1, score_player1, player2, score_player2])
                 del sorted_match_list[i]
                 del sorted_match_list[0]
 
             else:
                 print("Le match à déjà été jouer")
                 i += 1
+                player1 = sorted_match_list[0][0]
+                score_player1 = sorted_match_list[0][1]
+                player2 = sorted_match_list[i][0]
+                score_player2 = sorted_match_list[i][1]
+                match_1 = [player1, player2]
+                match_verify = [player2, player1]
                 for n in range(len(sorted_match_list)):
-                    match_1 = [player1, player2]
-                    match_verify = [player2, player1]
                     if match_1 not in list_all_matchs and match_verify not in list_all_matchs:
-                        match_list.append([player1, player2])
+                        match_list.append([player1, score_player1, player2, score_player2])
                         del sorted_match_list[i]
                         del sorted_match_list[0]
                         break
@@ -359,8 +365,8 @@ class Controller:
 
 
     """ ----- ----- MATCHS ----- ----- """
-    def play_match(self, match_list):
-        """ Lance les matchs entre joueurs """
+    def play_match_first_round(self, match_list):
+        """ Lance les matchs du premier round """
         first_player = match_list[0]["last_name"] + " " + match_list[0]["first_name"]
         second_player = match_list[1]["last_name"] + " " + match_list[1]["first_name"]
         first_player_score = 0
@@ -379,6 +385,29 @@ class Controller:
         match_result = (
             [match_list[0], first_player_score],
             [match_list[1], second_player_score],
+        )
+        return match_result
+
+    def play_match_other_rounds(self, match_list):
+        """ Lance les matchs des rounds restants """
+        first_player = match_list[0]["last_name"] + " " + match_list[0]["first_name"]
+        second_player = match_list[2]["last_name"] + " " + match_list[2]["first_name"]
+        first_player_score = match_list[1]
+        second_player_score = match_list[3]
+        self.view.match_title(first_player, second_player)
+        self.color_draw(first_player, second_player)
+        self.view.end_match()
+        result = self.view.match_result(first_player, second_player)
+        if result == 1:
+            first_player_score = first_player_score + 1
+        if result == 2:
+            second_player_score = second_player_score + 1
+        if result == 3:
+            first_player_score = first_player_score + 0.5
+            second_player_score = second_player_score + 0.5
+        match_result = (
+            [match_list[0], first_player_score],
+            [match_list[2], second_player_score],
         )
         return match_result
 
