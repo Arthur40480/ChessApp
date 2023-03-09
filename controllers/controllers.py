@@ -6,15 +6,16 @@ from tinydb import TinyDB, Query, where
 from datetime import datetime
 from datetime import date
 import random
+import os
 
 class Controller:
 
     """ ----- ----- Menu ----- ----- """
     def __init__(self):
         """ Initialise les valeurs du Conbtroller via le constructeur __init__ """
-        self.db = TinyDB("data/players/db.json")
+        self.db = TinyDB("data/players_db.json")
         self.players_table = self.db.table("Players")
-        self.db_tournament = TinyDB(f"data/tournaments/db.json")
+        self.db_tournament = TinyDB(f"data/tournaments_db.json")
         self.tournament_table = self.db_tournament.table(f"Tournaments")
         self.view = View()
         self.user = Query()
@@ -22,6 +23,7 @@ class Controller:
     def display_menu(self):
         """ Fait apparaître le menu """
         welcom_title = "♟️ Bienvenue dans l'application de tournois d'echecs ♟️"
+        self.add_folder_data()
         self.view.message(welcom_title)
         user_choice = self.view.menu()
         if user_choice == 1:
@@ -35,6 +37,9 @@ class Controller:
         if user_choice == 5:
             exit()
 
+    def add_folder_data(self):
+        if not os.path.exists("data"):
+            os.mkdir("data")
     def display_rapport_menu_title(self):
         """ Fait apparaître le titre """
         rapport_title = "📃 Menu des rapports 📃"
