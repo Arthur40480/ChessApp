@@ -29,8 +29,10 @@ class Controller:
         if user_choice == 2:
             self.new_tournament()
         if user_choice == 3:
-            self.display_rapport_menu_title()
+            self.display_tournament_not_finished()
         if user_choice == 4:
+            self.display_rapport_menu_title()
+        if user_choice == 5:
             exit()
 
     def display_rapport_menu_title(self):
@@ -120,26 +122,27 @@ class Controller:
         """ Affiche la liste des joueurs enregistrer par ordre alphabétique (Nom) """
         self.view.player_list_title()
         players = sorted(self.players_table, key=lambda player: player['last_name'])
-        self.view.display_player_list(players)
-        self.back_to_menu()
+        if len(players) == 0:
+            error_message = "🚨 Aucun joueur enregistrer ! 🚨"
+            self.view.message(error_message)
+            self.display_menu_rapport()
+        else:
+            self.view.display_player_list(players)
+            self.back_to_menu()
 
     def display_roster_list(self):
         """ Affiche les joueurs participant au tournoi séléctionner """
         tournament = self.tournament_list()
         self.view.display_tournament_list(tournament)
-        tournament_select = int(input("Veuillez ajouter le numéro du tournoi:"))
-        tournament_select = tournament_select - 1
-        self.view.display_roster_list(tournament[tournament_select])
-        self.back_to_menu()
-
-    def display_round_and_match(self):
-        """ Affiche les rounds, ainsi que les matchs de chaque round du tournoi séléctionner """
-        tournament = self.tournament_list()
-        self.view.display_tournament_list(tournament)
-        tournament_select = int(input("Veuillez ajouter le numéro du tournoi:"))
-        tournament_select = tournament_select - 1
-        self.view.display_round_and_match(tournament[tournament_select])
-        self.back_to_menu()
+        if len(tournament) == 0:
+            error_messsage = "🚨 Aucun tournoi enregistrer ! 🚨"
+            self.view.message(error_messsage)
+            self.display_menu_rapport()
+        else:
+            tournament_select = int(input("Veuillez ajouter le numéro du tournoi:"))
+            tournament_select = tournament_select - 1
+            self.view.display_roster_list(tournament[tournament_select])
+            self.back_to_menu()
 
     def display_victorious_player(self, ranking):
         """ On trie la liste des score finaux pour annoncer le vainqueur """
@@ -161,6 +164,8 @@ class Controller:
         description = tournament_data[10]
         roster_list = self.tournament_roster()
         round_list = []
+        current_score = []
+        finished = False
         tournament = Tournament(
             name,
             place,
@@ -169,8 +174,10 @@ class Controller:
             description,
             roster_list,
             round_list,
+            current_score,
             round,
             current_round,
+            finished,
         )
         self.add_tournament_in_file(tournament.__dict__)
         self.start_tournament(tournament.__dict__)
@@ -198,7 +205,6 @@ class Controller:
                 self.view.select_error_list()
         return roster_list
 
-
     def start_tournament(self, tournament):
         """ Lance le tournoi """
         answer = self.view.start_tournament()
@@ -210,9 +216,48 @@ class Controller:
     def display_tournament_list(self):
         """ Affiche la liste des tous les tournois """
         self.view.tournament_list_title()
-        tournament = self.tournament_table
-        self.view.display_tournament_list(tournament)
-        self.back_to_menu()
+        tournament_list = self.tournament_table
+        if len(tournament_list) == 0:
+            error_messsage = "🚨 Aucun tournoi enregistrer ! 🚨"
+            self.view.message(error_messsage)
+            self.display_menu_rapport()
+        else:
+            self.view.display_tournament_list(tournament_list)
+            self.back_to_menu()
+
+    def display_tournament_not_finished(self):
+        """ Affiche seulement les tournois en cours """
+        self.view.tournament_not_finished_list_title()
+        tournament_list = self.tournament_table
+        tournament_list_not_finished = []
+        for tournament in tournament_list:
+            if tournament["finished"] == False:
+                tournament_list_not_finished.append(tournament)
+        if len(tournament_list_not_finished) == 0:
+            error_messsage = "🚨 Aucun tournoi en cours ! 🚨"
+            self.view.message(error_messsage)
+            self.display_menu()
+        else:
+            self.view.display_tournament_not_finished(tournament_list_not_finished)
+            tournament_select = int(input("Veuillez ajouter le numéro du tournoi à reprendre:"))
+            tournament_select = tournament_select - 1
+            tournament = tournament_list_not_finished[tournament_select]
+            self.resume_tournament(tournament)
+
+    def resume_tournament(self, tournament):
+        """ Permet de reprendre un tournoi en cours suivant le round actuel """
+        current_round = tournament["current_round"]
+        if current_round == 1:
+            self.play_first_round(tournament)
+        else:
+            current_score = tournament["current_score"]
+            round_list = tournament["round_list"]
+            match_list = []
+            for round in round_list:
+                matchs_list = round["match_list"]
+                for match in matchs_list:
+                    match_list.append(match)
+            self.play_other_round(tournament, match_list, current_score)
 
     def tournament_list(self):
         """ Créer une liste de tous les tournois enregistrés """
@@ -227,14 +272,18 @@ class Controller:
                 tournament["description"],
                 tournament["players_list"],
                 tournament["round_list"],
+                tournament["current_score"],
                 tournament["nbr_rounds"],
                 tournament["current_round"],
+                tournament["finished"],
             ).__dict__
             tournament_list.append(tournaments)
         return tournament_list
 
     def end_tournament(self, tournament):
+        """ Annonce la fin du tournoi """
         name = tournament["name"]
+        self.tournament_table.upsert({"name": name, "finished": True}, self.user.name == name)
         end_tournament_title = f" Fin du tournoi {name} !"
         self.view.message(end_tournament_title)
 
@@ -263,15 +312,16 @@ class Controller:
         end_first_round = f"🎌 Fin du Round 1 - {end_date} 🎌"
         self.view.message(end_first_round)
 
-        """ On viens mettre à jour le round actuel, on enregistre le round dans la liste de round du tournoi """
-        self.update_tournament_file(1, start_date, end_date, result_match_list, tournament)
-
         """ On créer une liste qui vas contenir les scores actuels des joueurs """
         list_player_current_score = []
         for match_list in result_match_list:
             for match in match_list:
                 list_player_current_score.append(match)
 
+        """ On viens mettre à jour le round actuel, on enregistre le round dans la liste de round du tournoi """
+        self.update_tournament_file(1, start_date, end_date, result_match_list, tournament, list_player_current_score)
+
+        """ On passe au round suivant """
         self.ask_next_round(tournament, list_all_matchs, list_player_current_score)
 
     def mix_player_first_round(self, roster_list):
@@ -300,15 +350,14 @@ class Controller:
         end_round = f"🎌 Fin du Round {current_round} - {end_date} 🎌"
         self.view.message(end_round)
 
-        """ On viens mettre à jour le round actuel, on enregistre le round dans la liste de round du tournoi """
-        self.update_tournament_file(current_round, start_date, end_date, result_match_list, tournament)
-
-
-        """ On créer une liste qui vas contenir les scores actuels des joueurs """
+        """ On créer une liste qui vas contenir les scores actuels des joueurs mis à jour """
         list_current_score = []
         for match_list in result_match_list:
             for match in match_list:
                 list_current_score.append(match)
+
+        """ On viens mettre à jour le round actuel, on enregistre le round dans la liste de round du tournoi """
+        self.update_tournament_file(current_round, start_date, end_date, result_match_list, tournament, list_current_score)
 
         """ Si on arrive au dernier round, alors le tournoi est finis """
         nbr_round = tournament["nbr_rounds"]
@@ -318,7 +367,6 @@ class Controller:
             self.back_to_menu()
         else:
             self.ask_next_round(tournament, list_all_matchs, list_current_score)
-
 
     def mix_player(self, list_all_matchs, list_player_current_score):
         """ Définit les matchs, et évite de retomber sur le même joueur """
@@ -348,7 +396,7 @@ class Controller:
                 match_1 = [player1, player2]
                 match_verify = [player2, player1]
                 for n in range(len(sorted_match_list)):
-                    if match_1 not in list_all_matchs and match_verify not in list_all_matchs:
+                    if match_1 not in list_all_matchs and match_verify not in list_all_matchs or len(sorted_match_list) == 2:
                         match_list.append([player1, score_player1, player2, score_player2])
                         del sorted_match_list[i]
                         del sorted_match_list[0]
@@ -356,8 +404,6 @@ class Controller:
                     else:
                         i += 1
         return match_list
-
-
 
     def ask_next_round(self, tournament, list_all_matchs, list_player_current_score):
         """ Demande si on lance le round suivant """
@@ -369,10 +415,11 @@ class Controller:
         else:
             self.display_menu()
 
-    def update_tournament_file(self, current_round, start_date, end_date, match_list, tournament):
+    def update_tournament_file(self, current_round, start_date, end_date, match_list, tournament, list_player_current_score ):
         """ Enregistre les nouvelles données dans le fichier JSON """
         name = tournament["name"]
         round_list = tournament["round_list"]
+        nbr_rounds = tournament["nbr_rounds"]
         next_round = current_round + 1
         round = Tour(
             f"Round {current_round}",
@@ -383,10 +430,27 @@ class Controller:
         index_list = int(current_round) - 1
         round_list.insert(index_list, round.__dict__)
 
-
-        self.tournament_table.upsert({"name": name, "current_round": next_round}, self.user.name == name)
+        list_current_score = sorted(list_player_current_score, key=lambda player: player[1], reverse=True)
+        self.tournament_table.upsert({"name": name, "current_score": list_current_score}, self.user.name == name)
         self.tournament_table.upsert({"name": name, "round_list": round_list}, self.user.name == name)
+        if tournament["current_round"] == tournament["nbr_rounds"]:
+            self.tournament_table.upsert({"name": name, "current_round": nbr_rounds}, self.user.name == name)
+        else:
+            self.tournament_table.upsert({"name": name, "current_round": next_round}, self.user.name == name)
 
+    def display_round_and_match(self):
+        """ Affiche les rounds, ainsi que les matchs de chaque round du tournoi séléctionner """
+        tournament = self.tournament_list()
+        if len(tournament) == 0:
+            error_messsage = "🚨 Aucun tournoi en cours ! 🚨"
+            self.view.message(error_messsage)
+            self.display_menu_rapport()
+        else:
+            self.view.display_tournament_list(tournament)
+            tournament_select = int(input("Veuillez ajouter le numéro du tournoi:"))
+            tournament_select = tournament_select - 1
+            self.view.display_round_and_match(tournament[tournament_select])
+            self.back_to_menu()
 
 
     """ ----- ----- MATCHS ----- ----- """
@@ -407,6 +471,10 @@ class Controller:
         if result == 3:
             first_player_score = 0.5
             second_player_score = 0.5
+        if result == 0 or result > 3:
+            error_title = "⚠️ ERREUR: Ce résultat est incorrect ⚠️"
+            self.view.message(error_title)
+            self.display_menu()
         match_result = (
             [match_list[0], first_player_score],
             [match_list[1], second_player_score],
@@ -430,6 +498,10 @@ class Controller:
         if result == 3:
             first_player_score = first_player_score + 0.5
             second_player_score = second_player_score + 0.5
+        if result == 0 or result > 3:
+            error_title = "⚠️ ERREUR: Ce résultat est incorrect ⚠️"
+            self.view.message(error_title)
+            self.display_menu()
         match_result = (
             [match_list[0], first_player_score],
             [match_list[2], second_player_score],
