@@ -24,10 +24,7 @@ class View:
                 error_message = "⚠️ Veuillez choisir un nombre compris dans la liste ⚠️"
                 self.message(error_message)
 
-
         except ValueError:
-            """ Except nous permet de gérer une erreur 
-            ➡ Si l'utilisateur rentre d'autres caractères que des nombres"""
             error_message = "🔢️ Veuillez choisir un nombre 🔢️"
             self.message(error_message)
             self.menu()
@@ -50,8 +47,6 @@ class View:
                 self.rapport_menu()
 
         except ValueError:
-            """ Except nous permet de gérer une erreur 
-            ➡ Si l'utilisateur rentre d'autres caractères que des nombres"""
             error_message = "🔢️ Veuillez choisir un nombre 🔢️"
             self.message(error_message)
             self.rapport_menu()
@@ -61,7 +56,6 @@ class View:
         answer = input("💒 Revenir à l'acceuil ? (Oui/Non): ")
         print("")
         return answer
-
 
     """ ----- ----- JOUEUR ----- ----- """
     def new_player(self):
@@ -112,7 +106,6 @@ class View:
         print(f"Le vainqueur du tournoi est {victorious_player} avec {nbr_points} points ! Félicitations 🏆 !")
         print("🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉")
 
-
     """ ----- ----- TOURNOI ----- ----- """
     def new_tournament_title(self):
         tournament_creation_title = "🏁 Création d'un nouveau tournoi 🏁"
@@ -130,7 +123,8 @@ class View:
         round = int(input("Nombre de tours (4 par défaut) :" or 4))
         current_round = int(input("Numéro du tour actuel :" or 1))
         description = input("Remarques générales :")
-        return name, place, start_date_d, start_date_m, start_date_y, end_date_d, end_date_m, end_date_y, round, current_round, description
+        return name, place, start_date_d, start_date_m, start_date_y, \
+            end_date_d, end_date_m, end_date_y, round, current_round, description
 
     def tournament_roster_title(self):
         roster_title = "🏆 Veuillez choisir les joueurs participants au tournoi (8 joueurs max) 🏆"
@@ -155,7 +149,7 @@ class View:
         start_title = "🚥 Voulez vous commencer le tournoi ? 🚥"
         self.message(start_title)
         answer = input(" (Oui/Non) :")
-        return  answer
+        return answer
 
     def tournament_list_title(self):
         list_title = " 📃 Liste des tournois 📃"
@@ -172,7 +166,10 @@ class View:
                 place = tournament["place"]
                 start_date = tournament["start_date"]
                 end_date = tournament["end_date"]
-                print(f"{x}. ➡ Nom du tournoi: {name}, Lieu: {place}, date de début: {start_date}, date de fin: {end_date}")
+                print(f"{x}. ➡ Nom du tournoi: {name}, Lieu: {place}, "
+                      f"date de début: {start_date}, "
+                      f"date de fin: {end_date}"
+                      )
         print("")
 
     def tournament_not_finished_list_title(self):
@@ -189,11 +186,10 @@ class View:
             print(f"{x}. ➡ Nom du tournoi: {name}, Lieu: {place}, Round {current_round}, En cours ✅")
         print("")
 
-
     """ ----- ----- ROUND ----- ----- """
     def play_round(self, current_round, start_date):
-       round_title = f" 🎌 Round {current_round}  {start_date} 🎌"
-       self.message(round_title)
+        round_title = f" 🎌 Round {current_round}  {start_date} 🎌"
+        self.message(round_title)
 
     def ask_next_round_title(self, current_round):
         ask_next_round = f"🎌 Voulez vous lancer le Round {current_round} ? 🎌"
@@ -209,18 +205,22 @@ class View:
             self.message(error_message)
         else:
             for match in round_list:
-                print("📃 " + match["nom"] + " 📃")
+                start_time = match["date_heure_debut"]
+                end_time = match["date_heure_fin"]
+                match_name = match["name"]
+                print(f"📃 {match_name} 📃")
                 print("")
-                print("🕙 Début du round: " + match["date_heure_debut"] + "- Fin du round: " + match["date_heure_fin"] + " 🕙")
+                print(f"🕙 Début du round: {start_time} - Fin du round: {end_time} 🕙")
                 match_list = match["match_list"]
                 for matchs in match_list:
                     player1 = matchs[0][0]["last_name"] + " " + matchs[0][0]["first_name"]
                     player2 = matchs[1][0]["last_name"] + " " + matchs[1][0]["first_name"]
                     score_player1 = matchs[0][1]
                     score_player2 = matchs[1][1]
-                    print(f"{player1}, nombre de points: {score_player1} contre {player2}, nombre de points: {score_player2}")
+                    print(f"{player1}, nombre de points: {score_player1} contre {player2}, "
+                          f"nombre de points: {score_player2}"
+                          )
                 print("")
-
 
     """ ----- ----- MATCH ----- ----- """
     def match_title(self, first_player, second_player):
@@ -240,15 +240,9 @@ class View:
         print("Quel est le résultat du match ?")
         print(f"1 - Joueur 1 - {first_player} vainqueur !")
         print(f"2 - Joueur 2 - {second_player} vainqueur !")
-        print(f"3 - Egalité parfaite !")
+        print("3 - Egalité parfaite !")
         result = int(input("Veuillez entrer le résultat du match (1/2/3) :"))
         return result
 
     def end_match(self):
         input("🕦 Veuillez appuyer sur Entrer lorsque le match est terminer 🕦")
-
-
-
-
-
-

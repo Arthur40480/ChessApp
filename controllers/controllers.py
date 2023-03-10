@@ -2,27 +2,28 @@ from views.views import View
 from models.player import Player
 from models.tournament import Tournament
 from models.tour import Tour
-from tinydb import TinyDB, Query, where
+from tinydb import TinyDB, Query
 from datetime import datetime
 from datetime import date
 import random
 import os
 
+
 class Controller:
 
     """ ----- ----- Menu ----- ----- """
     def __init__(self):
-        """ Initialise les valeurs du Conbtroller via le constructeur __init__ """
+        """Initialise les valeurs du Controller via le constructeur"""
         self.db = TinyDB("data/players_db.json")
         self.players_table = self.db.table("Players")
-        self.db_tournament = TinyDB(f"data/tournaments_db.json")
-        self.tournament_table = self.db_tournament.table(f"Tournaments")
+        self.db_tournament = TinyDB("data/tournaments_db.json")
+        self.tournament_table = self.db_tournament.table("Tournaments")
         self.view = View()
         self.user = Query()
 
     def display_menu(self):
         """ Fait apparaître le menu """
-        welcom_title = "♟️ Bienvenue dans l'application de tournois d'echecs ♟️"
+        welcom_title = "♟️ Chess App ♟️"
         self.add_folder_data()
         self.view.message(welcom_title)
         user_choice = self.view.menu()
@@ -40,6 +41,7 @@ class Controller:
     def add_folder_data(self):
         if not os.path.exists("data"):
             os.mkdir("data")
+
     def display_rapport_menu_title(self):
         """ Fait apparaître le titre """
         rapport_title = "📃 Menu des rapports 📃"
@@ -68,7 +70,6 @@ class Controller:
         else:
             self.display_menu()
 
-
     """ ----- ----- Joueur ----- ----- """
     def new_player(self):
         """ Créer un nouveau Joueur """
@@ -80,7 +81,7 @@ class Controller:
         dath_of_birth = data_player[2]
         chess_id = data_player[3]
 
-        """ On viens vérifier si le joueur n'existe pas déjà """
+        """ On viens vérifier si le joueur existe déjà """
         same_chess_id = self.players_table.search(self.user.chess_id == chess_id)
         same_name = self.players_table.search(self.user.first_name == first_name)
         same_last_name = self.players_table.search(self.user.last_name == last_name)
@@ -153,7 +154,6 @@ class Controller:
         """ On trie la liste des score finaux pour annoncer le vainqueur """
         ranking_list = sorted(ranking, key=lambda player: player[1], reverse=True)
         self.view.display_victorious_player(ranking_list)
-
 
     """ ----- ----- TOURNOI ----- ----- """
     def new_tournament(self):
@@ -236,7 +236,7 @@ class Controller:
         tournament_list = self.tournament_table
         tournament_list_not_finished = []
         for tournament in tournament_list:
-            if tournament["finished"] == False:
+            if tournament["finished"] is False:
                 tournament_list_not_finished.append(tournament)
         if len(tournament_list_not_finished) == 0:
             error_messsage = "🚨 Aucun tournoi en cours ! 🚨"
@@ -292,7 +292,6 @@ class Controller:
         end_tournament_title = f" Fin du tournoi {name} !"
         self.view.message(end_tournament_title)
 
-
     """ ----- ----- ROUND ----- ----- """
     def play_first_round(self, tournament):
         """ Annonce le premier Round """
@@ -309,7 +308,7 @@ class Controller:
         list_all_matchs = []
         for match in match_list:
             list_all_matchs.append(match)
-            """ Pour chaques match dans la liste, on viens chercher le résultat, et on l'ajoute à la liste de résultat """
+            """ On viens chercher le résultat, et on l'ajoute à la liste de résultat """
             result_match_list.append(self.play_match_first_round(match))
         end_date = datetime.today().strftime('%d/%m/%Y-%H:%M:%S')
 
@@ -361,8 +360,9 @@ class Controller:
             for match in match_list:
                 list_current_score.append(match)
 
-        """ On viens mettre à jour le round actuel, on enregistre le round dans la liste de round du tournoi """
-        self.update_tournament_file(current_round, start_date, end_date, result_match_list, tournament, list_current_score)
+        """ On viens mettre à jour le round actuel, on enregistre le round dans la liste de round """
+        self.update_tournament_file(current_round, start_date, end_date, result_match_list,
+                                    tournament, list_current_score)
 
         """ Si on arrive au dernier round, alors le tournoi est finis """
         nbr_round = tournament["nbr_rounds"]
@@ -401,7 +401,9 @@ class Controller:
                 match_1 = [player1, player2]
                 match_verify = [player2, player1]
                 for n in range(len(sorted_match_list)):
-                    if match_1 not in list_all_matchs and match_verify not in list_all_matchs or len(sorted_match_list) == 2:
+                    if match_1 not in list_all_matchs \
+                            and match_verify not in list_all_matchs \
+                            or len(sorted_match_list) == 2:
                         match_list.append([player1, score_player1, player2, score_player2])
                         del sorted_match_list[i]
                         del sorted_match_list[0]
@@ -420,7 +422,13 @@ class Controller:
         else:
             self.display_menu()
 
-    def update_tournament_file(self, current_round, start_date, end_date, match_list, tournament, list_player_current_score ):
+    def update_tournament_file(self, current_round,
+                               start_date,
+                               end_date,
+                               match_list,
+                               tournament,
+                               list_player_current_score
+                               ):
         """ Enregistre les nouvelles données dans le fichier JSON """
         name = tournament["name"]
         round_list = tournament["round_list"]
@@ -456,7 +464,6 @@ class Controller:
             tournament_select = tournament_select - 1
             self.view.display_round_and_match(tournament[tournament_select])
             self.back_to_menu()
-
 
     """ ----- ----- MATCHS ----- ----- """
     def play_match_first_round(self, match_list):
@@ -518,23 +525,3 @@ class Controller:
         color = ["Blanc ⚪", "Noir ⚫"]
         random.shuffle(color)
         self.view.color_draw(first_player, second_player, color)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

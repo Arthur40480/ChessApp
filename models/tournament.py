@@ -16,7 +16,7 @@ class Tournament:
         nbr_rounds=4,
         current_round=1,
         finished=False
-   ):
+    ):
         """ Initialise les valeurs d'un tournoi via le constructeur __init__ """
 
         self.name = name
