@@ -6,7 +6,15 @@
 *_Python :snake: :_* version 3.10
 
 ### Les librairies Python  :closed_book: :     
-    tinydb==4.7.1
+    flake8==6.0.0  
+    flake8-html==0.4.3  
+    Jinja2==3.1.2  
+    MarkupSafe==2.1.2  
+    mccabe==0.7.0  
+    pycodestyle==2.10.0  
+    pyflakes==3.0.1  
+    Pygments==2.14.0  
+    tinydb==4.7.1  
    
  ### Comment ça marche :question::question::question:
  
