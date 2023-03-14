@@ -61,12 +61,22 @@ class View:
     def new_player(self):
         last_name = input("Nom :")
         first_name = input("Prénom :")
-        b_day = int(input("Jour de naissance : "))
-        b_month = int(input("Mois de naissance :"))
-        b_year = int(input("Année de naissance :"))
-        dath_of_birth = date(b_year, b_month, b_day).strftime("%d/%m/%y")
-        chess_id = input("Identifiant national d'échecs (ex: AB12345) :")
-        return first_name, last_name, dath_of_birth, chess_id
+        b_day = input("Jour de naissance : ")
+        b_month = input("Mois de naissance :")
+        b_year = input("Année de naissance :")
+        try:
+            b_day = int(b_day)
+            b_month = int(b_month)
+            b_year = int(b_year)
+
+        except ValueError:
+            print("La date de naissance indiqué est incorrect !")
+            exit()
+
+        else:
+            dath_of_birth = date(b_year, b_month, b_day).strftime("%d/%m/%y")
+            chess_id = input("Identifiant national d'échecs (ex: AB12345) :")
+            return first_name, last_name, dath_of_birth, chess_id
 
     def player_list_title(self):
         list_title = " 📃 Liste des joueurs enregistrés 📃"
@@ -205,9 +215,10 @@ class View:
             self.message(error_message)
         else:
             for match in round_list:
+                print(match)
                 start_time = match["date_heure_debut"]
                 end_time = match["date_heure_fin"]
-                match_name = match["name"]
+                match_name = match["nom"]
                 print(f"📃 {match_name} 📃")
                 print("")
                 print(f"🕙 Début du round: {start_time} - Fin du round: {end_time} 🕙")
