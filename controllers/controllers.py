@@ -1,8 +1,8 @@
 from views.views import View
 from models.player import Player
 from models.tournament import Tournament
+from models.db import Database
 from models.tour import Tour
-from tinydb import TinyDB, Query
 from datetime import datetime
 from datetime import date
 import random
@@ -14,12 +14,8 @@ class Controller:
     """ ----- ----- Menu ----- ----- """
     def __init__(self):
         """Initialise les valeurs du Controller via le constructeur"""
-        self.db = TinyDB("data/players_db.json")
-        self.players_table = self.db.table("Players")
-        self.db_tournament = TinyDB("data/tournaments_db.json")
-        self.tournament_table = self.db_tournament.table("Tournaments")
         self.view = View()
-        self.user = Query()
+        self.database = Database()
 
     def display_menu(self):
         """ Fait apparaître le menu """
@@ -82,22 +78,15 @@ class Controller:
         chess_id = data_player[3]
 
         """ On viens vérifier si le joueur existe déjà """
-        same_chess_id = self.players_table.search(self.user.chess_id == chess_id)
-        same_name = self.players_table.search(self.user.first_name == first_name)
-        same_last_name = self.players_table.search(self.user.last_name == last_name)
-
-        if same_chess_id:
-            error_id_message = "⚠️ Ce Chess ID est déjà utilisé ! ⚠️"
-            self.view.message(error_id_message)
-            self.display_menu()
-
-        if same_last_name and same_name:
+        db_query = self.database.checks_players_already_exists(chess_id, first_name, last_name)
+        if db_query is True:
             error_message = "⚠️ Ce joueur est déjà enregistrer ⚠️"
             self.view.message(error_message)
             self.display_menu()
 
         player = Player(last_name, first_name, dath_of_birth, chess_id)
-        self.add_player_in_file(player.__dict__)
+        self.database.add_player_in_file(player.__dict__)
+        self.view.add_player_in_file_title()
         new_player_again = input("🔄 Voulez vous enregistrer un autre joueur ? 🔄 (Oui/Non) :")
         if (new_player_again == "O" or new_player_again == "Oui" or new_player_again == "oui"):
             self.new_player()
@@ -106,8 +95,7 @@ class Controller:
 
     def players_roster(self):
         """ Création d'une liste contenant les joueurs enregistrés """
-        players = self.players_table.all()
-        players = sorted(players, key=lambda player: player['last_name'])
+        players = self.database.display_player_list()
         player_roster = []
         for people in players:
             player = Player(
@@ -119,15 +107,10 @@ class Controller:
             player_roster.append(player)
         return player_roster
 
-    def add_player_in_file(self, data):
-        """ Enregistre le joueur dans le fichier JSON """
-        self.players_table.insert(data)
-        self.view.add_player_in_file_title()
-
     def display_player_list(self):
         """ Affiche la liste des joueurs enregistrer par ordre alphabétique (Nom) """
         self.view.player_list_title()
-        players = sorted(self.players_table, key=lambda player: player['last_name'])
+        players = self.database.display_player_list()
         if len(players) == 0:
             error_message = "🚨 Aucun joueur enregistrer ! 🚨"
             self.view.message(error_message)
@@ -184,13 +167,9 @@ class Controller:
             current_round,
             finished,
         )
-        self.add_tournament_in_file(tournament.__dict__)
-        self.start_tournament(tournament.__dict__)
-
-    def add_tournament_in_file(self, data):
-        """ Enregistre le tournoi dans le fichier JSON """
-        self.tournament_table.insert(data)
+        self.database.add_tournament_in_file(tournament.__dict__)
         self.view.add_tournament_in_file_title()
+        self.start_tournament(tournament.__dict__)
 
     def tournament_roster(self):
         """ Permet la séléction des joueurs participant au tournoi """
@@ -221,7 +200,7 @@ class Controller:
     def display_tournament_list(self):
         """ Affiche la liste des tous les tournois """
         self.view.tournament_list_title()
-        tournament_list = self.tournament_table
+        tournament_list = self.database.tournament_table
         if len(tournament_list) == 0:
             error_messsage = "🚨 Aucun tournoi enregistrer ! 🚨"
             self.view.message(error_messsage)
@@ -233,7 +212,7 @@ class Controller:
     def display_tournament_not_finished(self):
         """ Affiche seulement les tournois en cours """
         self.view.tournament_not_finished_list_title()
-        tournament_list = self.tournament_table
+        tournament_list = self.database.tournament_table
         tournament_list_not_finished = []
         for tournament in tournament_list:
             if tournament["finished"] is False:
@@ -266,7 +245,7 @@ class Controller:
 
     def tournament_list(self):
         """ Créer une liste de tous les tournois enregistrés """
-        tournament_table = self.tournament_table
+        tournament_table = self.database.tournament_table
         tournament_list = []
         for tournament in tournament_table:
             tournaments = Tournament(
@@ -287,9 +266,8 @@ class Controller:
 
     def end_tournament(self, tournament):
         """ Annonce la fin du tournoi """
-        name = tournament["name"]
-        self.tournament_table.upsert({"name": name, "finished": True}, self.user.name == name)
-        end_tournament_title = f" Fin du tournoi {name} !"
+        self.database.end_tournament(tournament)
+        end_tournament_title = " Fin du tournoi !"
         self.view.message(end_tournament_title)
 
     """ ----- ----- ROUND ----- ----- """
@@ -375,7 +353,7 @@ class Controller:
 
     def mix_player(self, list_all_matchs, list_player_current_score):
         """ Définit les matchs, et évite de retomber sur le même joueur """
-        sorted_match_list = sorted(list_player_current_score, key=lambda player: player[1], reverse=True)
+        sorted_match_list = self.database.player_list_by_score(list_player_current_score)
         match_list = []
         while len(sorted_match_list) != 0:
             i = 1
@@ -414,7 +392,8 @@ class Controller:
 
     def ask_next_round(self, tournament, list_all_matchs, list_player_current_score):
         """ Demande si on lance le round suivant """
-        current_tournament = self.tournament_table.get(self.user.name == tournament["name"])
+        name = tournament["name"]
+        current_tournament = self.database.retrieve_current_tournament(name)
         next_round = current_tournament["current_round"]
         answer = self.view.ask_next_round_title(next_round)
         if (answer == "O" or answer == "Oui" or answer == "oui"):
@@ -442,14 +421,12 @@ class Controller:
         )
         index_list = int(current_round) - 1
         round_list.insert(index_list, round.__dict__)
-
-        list_current_score = sorted(list_player_current_score, key=lambda player: player[1], reverse=True)
-        self.tournament_table.upsert({"name": name, "current_score": list_current_score}, self.user.name == name)
-        self.tournament_table.upsert({"name": name, "round_list": round_list}, self.user.name == name)
-        if tournament["current_round"] == tournament["nbr_rounds"]:
-            self.tournament_table.upsert({"name": name, "current_round": nbr_rounds}, self.user.name == name)
-        else:
-            self.tournament_table.upsert({"name": name, "current_round": next_round}, self.user.name == name)
+        self.database.update_tournament_file(list_player_current_score,
+                                             name,
+                                             round_list,
+                                             tournament,
+                                             nbr_rounds,
+                                             next_round)
 
     def display_round_and_match(self):
         """ Affiche les rounds, ainsi que les matchs de chaque round du tournoi séléctionner """
