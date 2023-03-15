@@ -57,5 +57,13 @@ Normalement, lors de l'activation vous devriez voir (env) devant le chemin :arro
  python main.py
 
 ```
+
+### Comment générer un rapport flake8 :question::question::question:
+Une fois flake8 installer, il suffit de rentrer cette commande dans le terminal:
+```
+flake8 --format=html --htmldir=flake-report
+
+
+```
   
   ## ♟️ Échec et mat :black_circle: :white_circle:
