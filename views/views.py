@@ -1,4 +1,3 @@
-from datetime import date
 
 class View:
 
@@ -64,19 +63,8 @@ class View:
         b_day = input("Jour de naissance : ")
         b_month = input("Mois de naissance :")
         b_year = input("Année de naissance :")
-        try:
-            b_day = int(b_day)
-            b_month = int(b_month)
-            b_year = int(b_year)
-
-        except ValueError:
-            print("La date de naissance indiqué est incorrect !")
-            exit()
-
-        else:
-            dath_of_birth = date(b_year, b_month, b_day).strftime("%d/%m/%y")
-            chess_id = input("Identifiant national d'échecs (ex: AB12345) :")
-            return first_name, last_name, dath_of_birth, chess_id
+        chess_id = input("Identifiant national d'échecs (ex: AB12345) :")
+        return first_name, last_name, chess_id, b_day, b_month, b_year
 
     def player_list_title(self):
         list_title = " 📃 Liste des joueurs enregistrés 📃"
@@ -124,17 +112,29 @@ class View:
     def new_tournament(self):
         name = input("Le nom du tournoi :")
         place = input("Où :")
-        start_date_d = int(input("Jour de début (dd) :"))
-        start_date_m = int(input("Mois de début (mm) :"))
-        start_date_y = int(input("Année de début (yyyy) :"))
-        end_date_d = int(input("Jour de fin (dd) :"))
-        end_date_m = int(input("Mois de fin (mm) :"))
-        end_date_y = int(input("Année de fin (yyyy) :"))
-        round = int(input("Nombre de tours (4 par défaut) :" or 4))
-        current_round = int(input("Numéro du tour actuel :" or 1))
-        description = input("Remarques générales :")
-        return name, place, start_date_d, start_date_m, start_date_y, \
-            end_date_d, end_date_m, end_date_y, round, current_round, description
+        start_date_d = input("Jour de début (dd) :")
+        start_date_m = input("Mois de début (mm) :")
+        start_date_y = input("Année de début (yyyy) :")
+        end_date_d = input("Jour de fin (dd) :")
+        end_date_m = input("Mois de fin (mm) :")
+        end_date_y = input("Année de fin (yyyy) :")
+        try:
+            start_date_d = int(start_date_d)
+            start_date_m = int(start_date_m)
+            start_date_y = int(start_date_y)
+            end_date_d = int(end_date_d)
+            end_date_m = int(end_date_m)
+            end_date_y = int(end_date_y)
+        except ValueError:
+            print("")
+            print("🚨 La date est incorrect ! 🚨")
+            exit()
+        else:
+            round = int(input("Nombre de tours (4 par défaut) :" or 4))
+            current_round = int(input("Numéro du tour actuel :" or 1))
+            description = input("Remarques générales :")
+            return name, place, start_date_d, start_date_m, start_date_y, \
+                end_date_d, end_date_m, end_date_y, round, current_round, description
 
     def tournament_roster_title(self):
         roster_title = "🏆 Veuillez choisir les joueurs participants au tournoi (8 joueurs max) 🏆"
@@ -215,13 +215,13 @@ class View:
             self.message(error_message)
         else:
             for match in round_list:
-                print(match)
                 start_time = match["date_heure_debut"]
                 end_time = match["date_heure_fin"]
                 match_name = match["nom"]
                 print(f"📃 {match_name} 📃")
                 print("")
                 print(f"🕙 Début du round: {start_time} - Fin du round: {end_time} 🕙")
+                print("")
                 match_list = match["match_list"]
                 for matchs in match_list:
                     player1 = matchs[0][0]["last_name"] + " " + matchs[0][0]["first_name"]

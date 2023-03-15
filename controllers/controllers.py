@@ -74,8 +74,20 @@ class Controller:
         data_player = self.view.new_player()
         first_name = data_player[0]
         last_name = data_player[1]
-        dath_of_birth = data_player[2]
-        chess_id = data_player[3]
+        chess_id = data_player[2]
+        b_day = data_player[3]
+        b_month = data_player[4]
+        b_year = data_player[5]
+        try:
+            b_day = int(b_day)
+            b_month = int(b_month)
+            b_year = int(b_year)
+        except ValueError:
+            print("")
+            print("🚨 La date de naissance indiqué est incorrect ! 🚨")
+            self.display_menu()
+        else:
+            dath_of_birth = date(b_year, b_month, b_day).strftime("%d/%m/%y")
 
         """ On viens vérifier si le joueur existe déjà """
         db_query = self.database.checks_players_already_exists(chess_id, first_name, last_name)
@@ -128,10 +140,21 @@ class Controller:
             self.view.message(error_messsage)
             self.display_menu_rapport()
         else:
-            tournament_select = int(input("Veuillez ajouter le numéro du tournoi:"))
-            tournament_select = tournament_select - 1
-            self.view.display_roster_list(tournament[tournament_select])
-            self.back_to_menu()
+            tournament_select = input("Veuillez ajouter le numéro du tournoi:")
+            try:
+                if int(tournament_select) > 0 and int(tournament_select) <= (len(tournament)):
+                    tournament_select = int(tournament_select) - 1
+                    self.view.display_roster_list(tournament[tournament_select])
+                    self.back_to_menu()
+                else:
+                    print("")
+                    print("🚨 Ce numéro de tournoi n'éxiste pas ! 🚨")
+                    print("")
+                    self.display_menu()
+            except ValueError:
+                error_message = "🔢️ Veuillez choisir un nombre 🔢️"
+                self.view.message(error_message)
+                self.display_menu()
 
     def display_victorious_player(self, ranking):
         """ On trie la liste des score finaux pour annoncer le vainqueur """
@@ -223,10 +246,21 @@ class Controller:
             self.display_menu()
         else:
             self.view.display_tournament_not_finished(tournament_list_not_finished)
-            tournament_select = int(input("Veuillez ajouter le numéro du tournoi à reprendre:"))
-            tournament_select = tournament_select - 1
-            tournament = tournament_list_not_finished[tournament_select]
-            self.resume_tournament(tournament)
+            tournament_select = input("Veuillez ajouter le numéro du tournoi à reprendre:")
+            try:
+                if int(tournament_select) > 0 and int(tournament_select) <= (len(tournament_list_not_finished)):
+                    tournament_select = int(tournament_select) - 1
+                    tournament = tournament_list_not_finished[tournament_select]
+                    self.resume_tournament(tournament)
+                else:
+                    print("")
+                    print("🚨 Ce numéro de tournoi n'éxiste pas ! 🚨")
+                    print("")
+                    self.display_menu()
+            except ValueError:
+                error_message = "🔢️ Veuillez choisir un nombre 🔢️"
+                self.view.message(error_message)
+                self.display_menu()
 
     def resume_tournament(self, tournament):
         """ Permet de reprendre un tournoi en cours suivant le round actuel """
@@ -437,10 +471,21 @@ class Controller:
             self.display_menu_rapport()
         else:
             self.view.display_tournament_list(tournament)
-            tournament_select = int(input("Veuillez ajouter le numéro du tournoi:"))
-            tournament_select = tournament_select - 1
-            self.view.display_round_and_match(tournament[tournament_select])
-            self.back_to_menu()
+            tournament_select = input("Veuillez ajouter le numéro du tournoi:")
+            try:
+                if int(tournament_select) > 0 and int(tournament_select) <= (len(tournament)):
+                    tournament_select = int(tournament_select) - 1
+                    self.view.display_round_and_match(tournament[tournament_select])
+                    self.back_to_menu()
+                else:
+                    print("")
+                    print("🚨 Ce numéro de tournoi n'éxiste pas ! 🚨")
+                    print("")
+                    self.display_menu()
+            except ValueError:
+                error_message = "🔢️ Veuillez choisir un nombre 🔢️"
+                self.view.message(error_message)
+                self.display_menu()
 
     """ ----- ----- MATCHS ----- ----- """
     def play_match_first_round(self, match_list):
